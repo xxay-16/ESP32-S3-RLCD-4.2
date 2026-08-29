@@ -22,10 +22,9 @@ constexpr const char *kSpeakingStatus = "小智正在说话";
 
 void handle_incoming_tts_start(xiaozhi_websocket::WebsocketSession &session)
 {
-    // The device currently does not support reliable playback interruption.
-    // Stop uploading microphone/AEC output while the speaker is active so its
-    // echo cannot be mistaken by the server for a new user turn.
-    xiaozhi_voice_pause_streaming();
+    // Conversation mode supplies the microphone plus the codec playback
+    // reference to the device-side VOIP AEC. Keep its output streaming while
+    // the speaker is active so the server can detect near-field barge-in.
     session.server_speaking = true;
     session.exit_reply_started = session.exit_after_reply_requested;
     session.resume_listening_pending = false;

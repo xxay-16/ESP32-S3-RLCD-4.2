@@ -1,4 +1,4 @@
-// 验证小智 TTS 全程不会因 WakeNet/扬声器回声误触发而中断回复。
+// 验证小智使用设备侧 AEC 输出支持 TTS 期间自然打断。
 #include "xiaozhi_conversation_policy.h"
 
 #include <cassert>
@@ -19,9 +19,9 @@ int main()
     assert(!xiaozhi_wake_interrupt_allowed(true, true, true, 5000));
 
     assert(xiaozhi_microphone_uplink_allowed(false, false));
-    assert(!xiaozhi_microphone_uplink_allowed(true, false));
-    assert(!xiaozhi_microphone_uplink_allowed(false, true));
-    assert(!xiaozhi_microphone_uplink_allowed(true, true));
+    assert(xiaozhi_microphone_uplink_allowed(true, false));
+    assert(xiaozhi_microphone_uplink_allowed(false, true));
+    assert(xiaozhi_microphone_uplink_allowed(true, true));
 
     static_assert(kXiaozhiEmptyReplyContinuationMs > 0);
     assert(!xiaozhi_turn_reply_is_empty(false, false, false));

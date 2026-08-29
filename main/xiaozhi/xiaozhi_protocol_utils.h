@@ -206,7 +206,7 @@ namespace xiaozhi_protocol {
     }
     snprintf(out,
              out_len,
-             "{\"type\":\"hello\",\"version\":%d,\"features\":{\"mcp\":true},"
+             "{\"type\":\"hello\",\"version\":%d,\"features\":{\"mcp\":true,\"aec\":true},"
              "\"transport\":\"websocket\",\"audio_params\":{\"format\":\"opus\","
              "\"sample_rate\":16000,\"channels\":1,\"frame_duration\":60}}",
              version);

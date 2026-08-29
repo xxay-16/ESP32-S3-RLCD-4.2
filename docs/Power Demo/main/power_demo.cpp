@@ -875,10 +875,9 @@ bool play_first_chime(I2cDevices &devices)
         (void)audio_codec_delete_gpio_if(gpio);
     }
     if (tx) {
-        i2s_chan_info_t info = {};
-        if (i2s_channel_get_info(tx, &info) == ESP_OK && info.is_enabled) {
-            (void)i2s_channel_disable(tx);
-        }
+        // ESP-IDF 5.5.2 的 i2s_chan_info_t 尚无 is_enabled 字段。
+        // 对未启用的通道调用 disable 只会返回状态错误，清理时可安全忽略。
+        (void)i2s_channel_disable(tx);
         (void)i2s_del_channel(tx);
     }
     (void)gpio_set_direction(kAmplifierEnable, GPIO_MODE_OUTPUT);

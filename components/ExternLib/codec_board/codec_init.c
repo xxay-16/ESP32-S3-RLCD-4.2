@@ -310,18 +310,28 @@ static int _i2s_deinit(uint8_t port)
     }
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
     if (i2s_keep[port]->tx_handle) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 3)
         i2s_chan_info_t channel_info = {0};
         if (i2s_channel_get_info(i2s_keep[port]->tx_handle, &channel_info) == ESP_OK &&
             channel_info.is_enabled) {
             i2s_channel_disable(i2s_keep[port]->tx_handle);
         }
+#else
+        /* ESP-IDF 5.5.2 does not expose the channel enabled state. */
+        i2s_channel_disable(i2s_keep[port]->tx_handle);
+#endif
     }
     if (i2s_keep[port]->rx_handle) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 3)
         i2s_chan_info_t channel_info = {0};
         if (i2s_channel_get_info(i2s_keep[port]->rx_handle, &channel_info) == ESP_OK &&
             channel_info.is_enabled) {
             i2s_channel_disable(i2s_keep[port]->rx_handle);
         }
+#else
+        /* Ignore the harmless invalid-state result when already disabled. */
+        i2s_channel_disable(i2s_keep[port]->rx_handle);
+#endif
     }
     if (i2s_keep[port]->tx_handle) {
         i2s_del_channel(i2s_keep[port]->tx_handle);

@@ -193,10 +193,25 @@ static int _i2s_drv_enable(i2s_data_t *i2s_data, bool playback, bool enable)
     if (enable) {
         ret = i2s_channel_enable(channel);
     } else {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 3)
         i2s_chan_info_t channel_info = {0};
         if (i2s_channel_get_info(channel, &channel_info) == ESP_OK && !channel_info.is_enabled) {
             return ESP_CODEC_DEV_OK;
         }
+#else
+        /*
+         * ESP-IDF 5.5.2 does not expose is_enabled in i2s_chan_info_t.
+         * The codec-board layer may enable a channel before this adapter is
+         * created, so the adapter's cached flag is not authoritative yet.
+         * Probe by disabling the channel and accept INVALID_STATE as the
+         * already-disabled case.
+         */
+        ret = i2s_channel_disable(channel);
+        if (ret == ESP_ERR_INVALID_STATE) {
+            return ESP_CODEC_DEV_OK;
+        }
+        return ret == ESP_OK ? ESP_CODEC_DEV_OK : ESP_CODEC_DEV_DRV_ERR;
+#endif
         ret = i2s_channel_disable(channel);
     }
     return ret == ESP_OK ? ESP_CODEC_DEV_OK : ESP_CODEC_DEV_DRV_ERR;
@@ -268,7 +283,7 @@ static int set_drv_fs(i2s_chan_handle_t channel, bool playback, uint8_t slot_bit
             }
             ret = i2s_channel_reconfig_std_slot(channel, &slot_cfg);
             if (ret != ESP_OK) {
-                *(int *) 0 = 0;
+                ESP_LOGE(TAG, "reconfigure STD slot failed: %s", esp_err_to_name(ret));
                 return ESP_CODEC_DEV_DRV_ERR;
             }
             ret = i2s_channel_reconfig_std_clock(channel, &clk_cfg);

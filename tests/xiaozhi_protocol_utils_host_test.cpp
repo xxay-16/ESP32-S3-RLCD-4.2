@@ -94,7 +94,7 @@ void test_websocket_messages()
 
     xiaozhi_protocol::format_client_hello(out, sizeof(out), 2);
     expect(std::strcmp(out,
-                       "{\"type\":\"hello\",\"version\":2,\"features\":{\"mcp\":true},"
+                       "{\"type\":\"hello\",\"version\":2,\"features\":{\"mcp\":true,\"aec\":true},"
                        "\"transport\":\"websocket\",\"audio_params\":{\"format\":\"opus\","
                        "\"sample_rate\":16000,\"channels\":1,\"frame_duration\":60}}") == 0,
            "client hello payload changed");

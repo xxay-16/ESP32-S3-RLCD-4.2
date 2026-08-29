@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-// 当前硬件没有稳定到足以区分近场用户唤醒与扬声器回声的置信度。
-// TTS 期间禁用 WakeNet 打断，避免误触发 abort 后截断回复及尚未完成的 MCP。
+// 对话模式使用独立的 VOIP AEC 管线。WakeNet 只在待唤醒管线中运行，
+// 所以 TTS 期间的打断由服务器对设备侧 AEC 输出执行 VAD，而不是 WakeNet。
 inline constexpr bool kXiaozhiWakeInterruptDuringTtsEnabled = false;
 inline constexpr uint32_t kXiaozhiWakeInterruptArmDelayMs = 1000;
 inline constexpr uint32_t kXiaozhiEmptyReplyContinuationMs = 12000;
@@ -29,7 +29,11 @@ constexpr bool xiaozhi_wake_interrupt_allowed(bool server_speaking,
 constexpr bool xiaozhi_microphone_uplink_allowed(bool server_speaking,
                                                  bool tts_stop_pending)
 {
-    return !server_speaking && !tts_stop_pending;
+    (void)server_speaking;
+    (void)tts_stop_pending;
+    // 仅在实时对话循环中调用。保持 AEC 输出连续上行，服务器才能在
+    // 扬声器播放期间检测近场人声并发送 tts/stop 完成自然打断。
+    return true;
 }
 
 constexpr bool xiaozhi_turn_reply_is_empty(bool user_text_received,
